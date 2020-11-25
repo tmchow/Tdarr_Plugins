@@ -201,7 +201,7 @@ class Configurator {
 function calculateBitrate(file) {
   var bitrateprobe = file.ffProbeData.streams[0].bit_rate;
   if (isNaN(bitrateprobe)) {
-  bitrateprobe = file.bit_rate;
+    bitrateprobe = file.bit_rate;
   }
   return bitrateprobe;
 }
@@ -232,7 +232,6 @@ function buildAudioConfiguration(inputs, file, logger) {
   var stream_count = 0;
   var streams_removing = 0;
   var languages = inputs.audio_language.split(",");
-
 
   loopOverStreamsOfType(file, "audio", function (stream, id) {
     stream_count++;
@@ -327,17 +326,17 @@ function buildSubtitleConfiguration(inputs, file, logger) {
       }
 
       // Remove commentary subtitles
-    if ("title" in stream.tags && (inputs.subtitle_commentary.toLowerCase() == "true")) {
-        if (
-          stream.tags.title.toLowerCase().includes("commentary") ||
-          stream.tags.title.toLowerCase().includes("description") ||
-          stream.tags.title.toLowerCase().includes("sdh")
-        ) {
-          configuration.AddOutputSetting(`-map -0:s:${id}`);
-          logger.AddError(
-            `Removing Commentary or Description subtitle: ${stream.tags.title}`
-          );
-        }
+      if ("title" in stream.tags && (inputs.subtitle_commentary.toLowerCase() == "true")) {
+          if (
+            stream.tags.title.toLowerCase().includes("commentary") ||
+            stream.tags.title.toLowerCase().includes("description") ||
+            stream.tags.title.toLowerCase().includes("sdh")
+          ) {
+            configuration.AddOutputSetting(`-map -0:s:${id}`);
+            logger.AddError(
+              `Removing Commentary or Description subtitle: ${stream.tags.title}`
+            );
+          }
       }
     }
   });
