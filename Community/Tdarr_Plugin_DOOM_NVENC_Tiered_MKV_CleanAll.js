@@ -243,7 +243,7 @@ function buildAudioConfiguration(inputs, file, logger) {
       ) {
         streams_removing++;
         configuration.AddOutputSetting(`-map -0:a:${id}`);
-        logger.AddError(
+        logger.AddSuccess(
           `Removing Commentary or Description audio track #${id}: ${stream.tags.title}`
         );
       }
@@ -253,7 +253,7 @@ function buildAudioConfiguration(inputs, file, logger) {
         if (languages.indexOf(stream.tags.language.toLowerCase()) === -1) {
           configuration.AddOutputSetting(`-map -0:a:${id}`);
           streams_removing++;
-          logger.AddError(
+          logger.AddSuccess(
             `Removing audio track #${id} in language ${stream.tags.language}`
           );
         }
@@ -278,7 +278,7 @@ function buildAudioConfiguration(inputs, file, logger) {
             )
           ) {
             configuration.AddOutputSetting(`-map 0:${id} -c:${id} ${encoder} -b:a ${inputs.target_audio_bitrate}`);
-            logger.AddError(
+            logger.AddSuccess(
               `Converting audio track #${id} to ${inputs.target_audio_codec} (${inputs.target_audio_bitrate})`
             );
           }
@@ -319,7 +319,7 @@ function buildSubtitleConfiguration(inputs, file, logger) {
       if ("language" in stream.tags) {
         if (languages.indexOf(stream.tags.language.toLowerCase()) === -1) {
           configuration.AddOutputSetting(`-map -0:s:${id}`);
-          logger.AddError(
+          logger.AddSuccess(
             `Removing subtitle in language ${stream.tags.language}`
           );
         }
@@ -333,7 +333,7 @@ function buildSubtitleConfiguration(inputs, file, logger) {
             stream.tags.title.toLowerCase().includes("sdh")
           ) {
             configuration.AddOutputSetting(`-map -0:s:${id}`);
-            logger.AddError(
+            logger.AddSuccess(
               `Removing Commentary or Description subtitle: ${stream.tags.title}`
             );
           }
@@ -458,7 +458,7 @@ function buildVideoConfiguration(inputs, file, logger) {
         }
       }
 
-      logger.AddError("Transcoding to HEVC using NVidia NVENC");
+      logger.AddSuccess("Transcoding to HEVC using Nvidia NVENC");
     }
   });
 
