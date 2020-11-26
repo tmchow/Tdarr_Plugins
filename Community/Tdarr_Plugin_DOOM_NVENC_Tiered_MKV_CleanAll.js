@@ -383,83 +383,83 @@ function buildVideoConfiguration(inputs, file, logger) {
        * NVENC Configuration
       */
 
-    /*  Determine tiered bitrate variables */
-    if (file.video_resolution === "480p" || file.video_resolution === "576p" ) {
-      bitratecheck = parseInt(inputs.target_bitrate_480p576p);
-      if(bitrateprobe !== null && bitrateprobe < bitratecheck) {
-        bitratetarget = parseInt((bitrateprobe * inputs.target_pct_reduction) / 1000); // Lower Bitrate to 60% of original and convert to KB
-        bitratemax = bitratetarget + 500; // Set max bitrate to 0.5MB Higher  
-        cq = 29;
-      } else {
-        bitratetarget = parseInt(inputs.target_bitrate_480p576p / 1000);
-        bitratemax = bitratetarget + 500;
-        cq = 29;
+      /*  Determine tiered bitrate variables */
+      if (file.video_resolution === "480p" || file.video_resolution === "576p" ) {
+        bitratecheck = parseInt(inputs.target_bitrate_480p576p);
+        if(bitrateprobe !== null && bitrateprobe < bitratecheck) {
+          bitratetarget = parseInt((bitrateprobe * inputs.target_pct_reduction) / 1000); // Lower Bitrate to 60% of original and convert to KB
+          bitratemax = bitratetarget + 500; // Set max bitrate to 0.5MB Higher  
+          cq = 29;
+        } else {
+          bitratetarget = parseInt(inputs.target_bitrate_480p576p / 1000);
+          bitratemax = bitratetarget + 500;
+          cq = 29;
+        } 
+      }
+      if (file.video_resolution === "720p") {
+        bitratecheck = parseInt(inputs.target_bitrate_720p);
+        if(bitrateprobe !== null && bitrateprobe < bitratecheck) {
+          bitratetarget = parseInt((bitrateprobe * inputs.target_pct_reduction) / 1000); // Lower Bitrate to 60% of original and convert to KB
+          bitratemax = bitratetarget + 2000;  // Set max bitrate to 2MB Higher  
+          cq = 30;
+        } else {
+          bitratetarget = parseInt(inputs.target_bitrate_720p / 1000);
+          bitratemax = bitratetarget + 2000;  
+          cq = 30;
+        }
+      }
+      if (file.video_resolution === "1080p") {
+        bitratecheck = parseInt(inputs.target_bitrate_1080p);
+        if(bitrateprobe !== null && bitrateprobe < bitratecheck) {
+          bitratetarget = parseInt((bitrateprobe * inputs.target_pct_reduction) / 1000); // Lower Bitrate to 60% of original and convert to KB
+          bitratemax = bitratetarget + 2500;  // Set max bitrate to 2.5MB Higher  
+          cq = 31;
+        } else {
+          bitratetarget = parseInt(inputs.target_bitrate_1080p / 1000);
+          bitratemax = bitratetarget + 2500;  
+          cq = 31;
+        }
       } 
-    }
-    if (file.video_resolution === "720p") {
-      bitratecheck = parseInt(inputs.target_bitrate_720p);
-      if(bitrateprobe !== null && bitrateprobe < bitratecheck) {
-        bitratetarget = parseInt((bitrateprobe * inputs.target_pct_reduction) / 1000); // Lower Bitrate to 60% of original and convert to KB
-        bitratemax = bitratetarget + 2000;  // Set max bitrate to 2MB Higher  
-        cq = 30;
-      } else {
-        bitratetarget = parseInt(inputs.target_bitrate_720p / 1000);
-        bitratemax = bitratetarget + 2000;  
-        cq = 30;
+      if (file.video_resolution === "4KUHD") {
+        bitratecheck = parseInt(inputs.target_bitrate_4KUHD);
+        if(bitrateprobe !== null && bitrateprobe < bitratecheck) {
+          bitratetarget = parseInt((bitrateprobe * inputs.target_pct_reduction) / 1000); // Lower Bitrate to 60% of original and convert to KB
+          bitratemax = bitratetarget + 6000;  // Set max bitrate to 6MB Higher  
+          cq = 31;
+        } else {
+          bitratetarget = parseInt(inputs.target_bitrate_4KUHD / 1000);
+          bitratemax = bitratetarget + 6000;
+          cq = 31;
+        }
       }
-    }
-    if (file.video_resolution === "1080p") {
-      bitratecheck = parseInt(inputs.target_bitrate_1080p);
-      if(bitrateprobe !== null && bitrateprobe < bitratecheck) {
-        bitratetarget = parseInt((bitrateprobe * inputs.target_pct_reduction) / 1000); // Lower Bitrate to 60% of original and convert to KB
-        bitratemax = bitratetarget + 2500;  // Set max bitrate to 2.5MB Higher  
-        cq = 31;
-      } else {
-        bitratetarget = parseInt(inputs.target_bitrate_1080p / 1000);
-        bitratemax = bitratetarget + 2500;  
-        cq = 31;
-      }
-    } 
-    if (file.video_resolution === "4KUHD") {
-      bitratecheck = parseInt(inputs.target_bitrate_4KUHD);
-      if(bitrateprobe !== null && bitrateprobe < bitratecheck) {
-        bitratetarget = parseInt((bitrateprobe * inputs.target_pct_reduction) / 1000); // Lower Bitrate to 60% of original and convert to KB
-        bitratemax = bitratetarget + 6000;  // Set max bitrate to 6MB Higher  
-        cq = 31;
-      } else {
-        bitratetarget = parseInt(inputs.target_bitrate_4KUHD / 1000);
-        bitratemax = bitratetarget + 6000;
-        cq = 31;
-      }
-    }
 
-    configuration.RemoveOutputSetting("-c:v copy");
-    configuration.AddOutputSetting(
-      `-c:v hevc_nvenc -rc:v vbr_hq -qmin 0 -cq:v ${cq} -b:v ${bitratetarget}k -maxrate:v ${bitratemax}k -preset medium -rc-lookahead 32 -spatial_aq:v 1 -aq-strength:v 8`
-    );
+      configuration.RemoveOutputSetting("-c:v copy");
+      configuration.AddOutputSetting(
+        `-c:v hevc_nvenc -rc:v vbr_hq -qmin 0 -cq:v ${cq} -b:v ${bitratetarget}k -maxrate:v ${bitratemax}k -preset medium -rc-lookahead 32 -spatial_aq:v 1 -aq-strength:v 8`
+      );
 
-    if (file.video_codec_name === "h263") {
-      configuration.AddInputSetting("-c:v h263_cuvid");
-    } else if (file.video_codec_name === "h264") {
-      if (file.ffProbeData.streams[0].profile !== "High 10") {
-        configuration.AddInputSetting("-c:v h264_cuvid");
-      } else if (file.video_codec_name === "mjpeg") {
-        configuration.AddInputSetting("c:v mjpeg_cuvid");
-      } else if (file.video_codec_name == "mpeg1") {
-        configuration.AddInputSetting("-c:v mpeg1_cuvid");
-      } else if (file.video_codec_name == "mpeg2") {
-        configuration.AddInputSetting("-c:v mpeg2_cuvid");
-      } else if (file.video_codec_name == "vc1") {
-        configuration.AddInputSetting("-c:v vc1_cuvid");
-      } else if (file.video_codec_name == "vp8") {
-        configuration.AddInputSetting("-c:v vp8_cuvid");
-      } else if (file.video_codec_name == "vp9") {
-        configuration.AddInputSetting("-c:v vp9_cuvid");
+      if (file.video_codec_name === "h263") {
+        configuration.AddInputSetting("-c:v h263_cuvid");
+      } else if (file.video_codec_name === "h264") {
+        if (file.ffProbeData.streams[0].profile !== "High 10") {
+          configuration.AddInputSetting("-c:v h264_cuvid");
+        } else if (file.video_codec_name === "mjpeg") {
+          configuration.AddInputSetting("c:v mjpeg_cuvid");
+        } else if (file.video_codec_name == "mpeg1") {
+          configuration.AddInputSetting("-c:v mpeg1_cuvid");
+        } else if (file.video_codec_name == "mpeg2") {
+          configuration.AddInputSetting("-c:v mpeg2_cuvid");
+        } else if (file.video_codec_name == "vc1") {
+          configuration.AddInputSetting("-c:v vc1_cuvid");
+        } else if (file.video_codec_name == "vp8") {
+          configuration.AddInputSetting("-c:v vp8_cuvid");
+        } else if (file.video_codec_name == "vp9") {
+          configuration.AddInputSetting("-c:v vp9_cuvid");
+        }
       }
-    }
 
-    logger.AddError("Transcoding to HEVC using NVidia NVENC");
-  }
+      logger.AddError("Transcoding to HEVC using NVidia NVENC");
+    }
   });
 
   if (!configuration.shouldProcess) {
