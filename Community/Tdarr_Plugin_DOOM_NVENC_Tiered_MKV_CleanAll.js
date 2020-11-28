@@ -231,10 +231,14 @@ function buildAudioConfiguration(inputs, file, logger) {
   var configuration = new Configurator(["-c:a copy"]);
   var stream_count = 0;
   var streams_removing = 0;
+  var stream_remove_current = false;
   var languages = inputs.audio_language.split(",");
 
   loopOverStreamsOfType(file, "audio", function (stream, id) {
     stream_count++;
+    console.log('INPUTS:\n', inputs);
+    console.log('STREAM:\n', stream);
+    stream_remove_current = false;
     if ("tags" in stream && "title" in stream.tags && inputs.audio_commentary.toLowerCase() == "true") {
       if (
         stream.tags.title.toLowerCase().includes("commentary") ||
@@ -242,51 +246,61 @@ function buildAudioConfiguration(inputs, file, logger) {
         stream.tags.title.toLowerCase().includes("sdh")
       ) {
         streams_removing++;
+        stream_remove_current = true;
         configuration.AddOutputSetting(`-map -0:a:${id}`);
         logger.AddSuccess(
           `Removing Commentary or Description audio track #${id}: ${stream.tags.title}`
         );
+      } else {
+        console.log('Stream id #', id, ' not detected as Commentary or Description');
       }
     } else if ("tags" in stream) {
+      logger.AddSuccess(`founds "tags" in stream id ${id}, checking for matching language`);
       // Remove unwanted languages
       if ("language" in stream.tags) {
         if (languages.indexOf(stream.tags.language.toLowerCase()) === -1) {
           configuration.AddOutputSetting(`-map -0:a:${id}`);
           streams_removing++;
+          stream_remove_current = true;
           logger.AddSuccess(
             `Removing audio track #${id} in language ${stream.tags.language}`
           );
+        } else {
+          console.log('Stream id #', id, ' Detected as ', stream.tags.language, ' and did not match target removal languages.');
         }
       }
-    } else {
+    }
+    
+    // If haven't marked current stream for removal already, evaluate for conversion if requested by config
+    if (  stream_remove_current != true &&
+          inputs.source_audio_codec != undefined && 
+          inputs.target_audio_codec != undefined
+      ) {
         var audio_encoder = inputs.target_audio_codec;
         if (audio_encoder == "mp3") {
           audio_encoder = `libmp3lame`;
-        } else if (encoder == "dts") {
+        } else if (audio_encoder == "dts") {
           audio_encoder = `dca`;
         }
 
+        var codecs_to_transcode = inputs.source_audio_codec.split(",");
         if (
-          inputs.source_audio_codec != undefined && 
-          inputs.target_audio_codec != undefined
+          stream.codec_name &&
+          codecs_to_transcode.includes(
+            stream.codec_name.toLowerCase()
+          )
         ) {
-          var codecs_to_transcode = inputs.source_audio_codec.split(",");
-          if (
-            stream.id.codec_type.codec_name &&
-            codecs_to_transcode.includes(
-              stream.id.codec_name.toLowerCase()
-            )
-          ) {
-            configuration.AddOutputSetting(`-map 0:${id} -c:${id} ${encoder} -b:a ${inputs.target_audio_bitrate}`);
-            logger.AddSuccess(
-              `Converting audio track #${id} to ${inputs.target_audio_codec} (${inputs.target_audio_bitrate})`
-            );
-          }
+          configuration.AddOutputSetting(`-map 0:${id} -c:${id} ${audio_encoder} -b:a ${inputs.target_audio_bitrate}`);
+          logger.AddSuccess(
+            `Converting audio track #${id} to ${inputs.target_audio_codec} (${inputs.target_audio_bitrate})`
+          );
         } else {
-          logger.AddSuccess("No audio codec conversion requested");
+          console.log('Stream id #', id, ': Skip audio track. Source codec was ', stream.codec_name);
         }
+    } else {
+      logger.AddSuccess("No audio codec conversion requested");
     }
-});
+  });
 
   if (stream_count == streams_removing) {
     logger.AddError(
