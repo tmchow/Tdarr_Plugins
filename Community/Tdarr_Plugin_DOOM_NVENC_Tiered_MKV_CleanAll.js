@@ -290,6 +290,7 @@ function buildAudioConfiguration(inputs, file, logger) {
             stream.codec_name.toLowerCase()
           )
         ) {
+          configuration.RemoveOutputSetting("-c:a copy");
           configuration.AddOutputSetting(`-map 0:${id} -c:${id} ${audio_encoder} -b:a ${inputs.target_audio_bitrate}`);
           logger.AddSuccess(
             `Converting audio track #${id} to ${inputs.target_audio_codec} (${inputs.target_audio_bitrate})`
