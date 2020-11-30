@@ -291,7 +291,7 @@ function buildAudioConfiguration(inputs, file, logger) {
           )
         ) {
           configuration.RemoveOutputSetting("-c:a copy");
-          configuration.AddOutputSetting(`-map 0:${id} -c:${id} ${audio_encoder} -b:a ${inputs.target_audio_bitrate}`);
+          configuration.AddOutputSetting(`-map 0:a:${id} -c:a:${id} ${audio_encoder} -b:a ${inputs.target_audio_bitrate}`);
           logger.AddSuccess(
             `Converting audio track #${id} to ${inputs.target_audio_codec} (${inputs.target_audio_bitrate})`
           );
