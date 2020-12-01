@@ -236,9 +236,9 @@ function buildAudioConfiguration(inputs, file, logger) {
 
   loopOverStreamsOfType(file, "audio", function (stream, id) {
     stream_count++;
-    console.log('INPUTS:\n', inputs);
-    console.log('STREAM:\n', stream);
+    //console.log('STREAM:\n', stream);
     stream_remove_current = false;
+
     if ("tags" in stream && "title" in stream.tags && inputs.audio_commentary.toLowerCase() == "true") {
       if (
         stream.tags.title.toLowerCase().includes("commentary") ||
@@ -249,13 +249,12 @@ function buildAudioConfiguration(inputs, file, logger) {
         stream_remove_current = true;
         configuration.AddOutputSetting(`-map -0:a:${id}`);
         logger.AddSuccess(
-          `Removing Commentary or Description audio track #${id}: ${stream.tags.title}`
+          `Remove Audio #${stream.index} (title="${stream.tags.title}"): Commentary audio track`
         );
       } else {
-        console.log('Stream id #', id, ' not detected as Commentary or Description');
+        console.log(`Audio #${stream.index} (title="${stream.tags.title}") not detected as Commentary`);
       }
     } else if ("tags" in stream) {
-      logger.AddSuccess(`founds "tags" in stream id ${id}, checking for matching language`);
       // Remove unwanted languages
       if ("language" in stream.tags) {
         if (languages.indexOf(stream.tags.language.toLowerCase()) === -1) {
@@ -263,10 +262,10 @@ function buildAudioConfiguration(inputs, file, logger) {
           streams_removing++;
           stream_remove_current = true;
           logger.AddSuccess(
-            `Removing audio track #${id} in language ${stream.tags.language}`
+            `Remove Audio #${stream.index}: Audio in lang=${stream.tags.language}`
           );
         } else {
-          console.log('Stream id #', id, ' Detected as ', stream.tags.language, ' and did not match target removal languages.');
+          console.log(`Audio #${stream.index} detected as lang=${stream.tags.language} and did not match target removal languages`);
         }
       }
     }
@@ -291,15 +290,13 @@ function buildAudioConfiguration(inputs, file, logger) {
           )
         ) {
           configuration.RemoveOutputSetting("-c:a copy");
-          configuration.AddOutputSetting(`-map 0:a:${id} -c:a:${id} ${audio_encoder} -b:a ${inputs.target_audio_bitrate}`);
+          configuration.AddOutputSetting(`-map 0:a:${id} -c:a:${id} ${audio_encoder} -b:a ${inputs.target_audio_bitrate} -metadata:s:a:${id} title=`);
           logger.AddSuccess(
-            `Converting audio track #${id} to ${inputs.target_audio_codec} (${inputs.target_audio_bitrate})`
+            `Converting Audio #${stream.index} to ${inputs.target_audio_codec.toUpperCase()} (${inputs.target_audio_bitrate})`
           );
         } else {
-          console.log('Stream id #', id, ': Skip audio track. Source codec was ', stream.codec_name);
+          console.log(`Audio #${stream.index}: Skip audio track conversion. Source codec is ${stream.codec_name.toUpperCase()}`);
         }
-    } else {
-      logger.AddSuccess("No audio codec conversion requested");
     }
   });
 
@@ -330,7 +327,7 @@ function buildSubtitleConfiguration(inputs, file, logger) {
     }
 
     if ("tags" in stream) {
-      // Remove unwated languages
+      // Remove unwanted languages
       if ("language" in stream.tags) {
         if (languages.indexOf(stream.tags.language.toLowerCase()) === -1) {
           configuration.AddOutputSetting(`-map -0:s:${id}`);
@@ -502,7 +499,14 @@ function plugin(file, _librarySettings, inputs) {
   var videoSettings = buildVideoConfiguration(inputs, file, logger);
   var subtitleSettings = buildSubtitleConfiguration(inputs, file, logger);
 
+  if (inputs.source_audio_codec == undefined || 
+      inputs.target_audio_codec == undefined
+      ) {
+      logger.AddSuccess("No audio conversion requested");
+  }
+
   response.preset = `${videoSettings.GetInputSettings()},${videoSettings.GetOutputSettings()} ${audioSettings.GetOutputSettings()} ${subtitleSettings.GetOutputSettings()} -max_muxing_queue_size 4096`;
+
   response.processFile =
     audioSettings.shouldProcess ||
     videoSettings.shouldProcess ||
