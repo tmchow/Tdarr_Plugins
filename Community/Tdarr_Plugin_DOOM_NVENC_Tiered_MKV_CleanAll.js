@@ -136,6 +136,7 @@ class Log {
    */
   AddSuccess(entry) {
     this.entries.push(`☑ ${entry}`);
+    console.log(entry);
   }
 
   /**
@@ -144,6 +145,7 @@ class Log {
    */
   AddError(entry) {
     this.entries.push(`☒ ${entry}`);
+    console.log(entry);
   }
 
   /**
@@ -249,10 +251,10 @@ function buildAudioConfiguration(inputs, file, logger) {
         stream_remove_current = true;
         configuration.AddOutputSetting(`-map -0:a:${id}`);
         logger.AddSuccess(
-          `Remove Audio #${stream.index} (title="${stream.tags.title}"): Commentary audio track`
+          `Remove Audio #${stream.index} (title="${stream.tags.title}"): Commentary track`
         );
       } else {
-        console.log(`Audio #${stream.index} (title="${stream.tags.title}") not detected as Commentary`);
+        console.log(`Keep Audio #${stream.index} (title="${stream.tags.title}"): Not detected as Commentary track`);
       }
     } else if ("tags" in stream) {
       // Remove unwanted languages
@@ -292,6 +294,7 @@ function buildAudioConfiguration(inputs, file, logger) {
           )
         ) {
           configuration.RemoveOutputSetting("-c:a copy");
+          // Encode audio at specified bitrate and remove any title since original titles are often set to be the original codec name
           configuration.AddOutputSetting(`-map 0:a:${id} -c:a:${id} ${audio_encoder} -b:a ${inputs.target_audio_bitrate} -metadata:s:a:${id} title=`);
           logger.AddSuccess(
             `Converting Audio #${stream.index} to ${inputs.target_audio_codec.toUpperCase()} (${inputs.target_audio_bitrate})`
