@@ -280,6 +280,8 @@ function buildAudioConfiguration(inputs, file, logger) {
           audio_encoder = `libmp3lame`;
         } else if (audio_encoder == "dts") {
           audio_encoder = `dca`;
+        } else if (audio_encoder == "aac") {
+          audio_encoder = `libfdk_aac`;
         }
 
         var codecs_to_transcode = inputs.source_audio_codec.split(",");
